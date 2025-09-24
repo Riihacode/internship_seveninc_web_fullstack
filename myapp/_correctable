@@ -1,0 +1,19 @@
+[90m= [39m[34;4mApp\Models\StockTransaction[39;24m {#6112
+    [34mid[39m: [35m1[39m,
+    [34mcorrection_of[39m: [36mnull[39m,
+    [34mreference[39m: [36mnull[39m,
+    [34mproduct_id[39m: [35m1[39m,
+    [34msupplier_id[39m: [35m1[39m,
+    [34muser_id[39m: [35m3[39m,
+    [34mapproved_by[39m: [35m2[39m,
+    [34mtype[39m: "[32mMasuk[39m",
+    [34mquantity[39m: [35m95[39m,
+    [34munit_cost[39m: [36mnull[39m,
+    [34mdate[39m: "[32m2025-09-24[39m",
+    [34mstatus[39m: "[32mDiterima[39m",
+    [34mnotes[39m: "[32mwkwk[39m",
+    [34mcreated_at[39m: "[32m2025-09-24 02:01:12[39m",
+    [34mupdated_at[39m: "[32m2025-09-24 02:01:35[39m",
+    [34mdeleted_at[39m: [36mnull[39m,
+  }
+
