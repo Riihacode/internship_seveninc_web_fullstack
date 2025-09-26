@@ -31,7 +31,7 @@
             <tr>
                 <th class="p-2 border">ID</th>
                 <th class="p-2 border">Produk</th>
-                <th class="p-2 border">Supplier</th> {{-- ✅ Tambahan --}}
+                <th class="p-2 border">Supplier</th>
                 <th class="p-2 border">Staff</th>
                 <th class="p-2 border">Tipe</th>
                 <th class="p-2 border">Jumlah</th>
@@ -47,7 +47,7 @@
                 <tr class="hover:bg-gray-50">
                     <td class="p-2 border">{{ $t->id }}</td>
                     <td class="p-2 border">{{ $t->product->name ?? '-' }}</td>
-                    <td class="p-2 border">{{ $t->supplier->name ?? '-' }}</td> {{-- ✅ Tambahan --}}
+                    <td class="p-2 border">{{ $t->supplier->name ?? '-' }}</td>
                     <td class="p-2 border">{{ $t->user->name ?? '-' }}</td>
                     <td class="p-2 border">{{ $t->type }}</td>
                     <td class="p-2 border">{{ $t->quantity }}</td>
@@ -73,24 +73,18 @@
                     <td class="p-2 border">{{ $t->notes }}</td>
                     <td class="p-2 border">{{ $t->approver->name ?? '-' }}</td>
                     <td class="p-2 border">
-                        @if(in_array(auth()->user()->role, ['Admin','Manajer Gudang']))
-                            {{-- @if($t->status === 'Pending' && $t->type === 'Masuk')
-                                <form action="{{ route('transactions.approve_in', $t) }}" method="POST" class="inline">
-                                    @csrf
-                                    <button type="submit" class="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600">
-                                        Approve Masuk
-                                    </button>
-                                </form>
-                            @endif --}}
+
+                        {{-- ✅ Approve/Reject/Dispatch hanya untuk Manager & Admin --}}
+                        @can('update', $t)
                             @if($t->status === 'Pending' && $t->type === 'Masuk')
                                 <a href="{{ route('transactions.approve_form', $t) }}"
-                                class="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600">
-                                Approve Masuk
+                                   class="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600">
+                                   Approve Masuk
                                 </a>
                             @endif
 
                             @if($t->status === 'Pending' && $t->type === 'Keluar')
-                                <form action="{{ route('transactions.dispatch_out', $t) }}" method="POST" class="inline">
+                                <form action="{{ route('transactions.dispatch', $t) }}" method="POST" class="inline">
                                     @csrf
                                     <button type="submit" class="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600">
                                         Dispatch Keluar
@@ -106,149 +100,30 @@
                                     </button>
                                 </form>
                             @endif
+                        @endcan
 
-                            {{-- 🔹 Tambahan tombol Koreksi hanya jika sudah Diterima --}}
-                            {{-- @if($t->status === 'Diterima')
+                        {{-- ✅ Koreksi hanya untuk Manager & Admin --}}
+                        @can('correct', $t)
+                            @if($t->can_correct)
                                 <a href="{{ route('transactions.correct_form', $t) }}"
-                                class="px-2 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600">
-                                Koreksi
-                                </a>
-                            @endif --}}
-                            {{-- ✅ Tombol koreksi jika sudah Approved --}}
-                            {{-- @if($t->status === 'Diterima' && $t->type === 'Masuk')
-                                <a href="{{ route('transactions.correct_form', $t) }}"
-                                class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">
-                                Koreksi Supplier
-                                </a>
-                            @endif --}}
-                            {{-- ⬇️ Tombol koreksi hanya bila memenuhi semua syarat --}}
-                            {{-- @if($t->is_correctable)
-                                <a href="{{ route('transactions.correct_form', $t) }}"
-                                    class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">
-                                    Koreksi Supplier
-                                </a>
-                            @endif --}}
-                            {{-- @if($t->type === 'Masuk' && $t->status === 'Diterima')
-                                @if(is_null($t->correction_of) && !$t->corrections()->exists())
-                                    <a href="{{ route('transactions.correct_form', $t) }}"
-                                    class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">
-                                    Koreksi Supplier
-                                    </a>
-                                @else
-                                    <button disabled
-                                            class="px-2 py-1 bg-gray-300 text-gray-600 text-xs rounded cursor-not-allowed"
-                                            title="Transaksi sudah pernah dikoreksi">
-                                        Koreksi Supplier
-                                    </button>
-                                @endif
-                            @endif --}}
-                            {{-- @if(in_array(auth()->user()->role, ['Admin','Manajer Gudang']))
-                                @if($t->is_correctable)
-                                    <a href="{{ route('transactions.correct_form', $t) }}"
-                                    class="px-2 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600">
-                                    Koreksi
-                                    </a>
-                                @endif
-                            @endif --}}
-                            {{-- @if(
-                                    $t->type === 'Masuk' &&
-                                    $t->status === 'Diterima' &&
-                                    $t->id === \App\Models\StockTransaction::where('correction_of', $t->correction_of ?? $t->id)
-                                        ->orWhere('id', $t->correction_of ?? $t->id)
-                                        ->latest('id')
-                                        ->value('id')
-                                )
-                                <a href="{{ route('transactions.correct_form', $t) }}" class="...">Koreksi</a>
-                            @endif --}}
-                            {{-- @if(
-                                $t->type === 'Masuk' &&
-                                $t->status === 'Diterima' &&
-                                $t->id === \App\Models\StockTransaction::where(function($q) use ($t) {
-                                        $rootId = $t->correction_of ?? $t->id;
-                                        $q->where('correction_of', $rootId)
-                                        ->orWhere('id', $rootId);
-                                    })
-                                    ->latest('id')
-                                    ->value('id')
-                            )
-                                <a href="{{ route('transactions.correct_form', $t) }}"
-                                class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">
-                                Koreksi Supplier
-                                </a>
-                            @endif --}}
-                            {{-- @if(
-                                $t->type === 'Masuk' &&
-                                $t->status === 'Diterima' &&
-                                $t->id === \App\Models\StockTransaction::where(function($q) use ($t) {
-                                        // ambil akar rantai: kalau dia hasil koreksi, pakai correction_of pertama
-                                        $rootId = $t->correction_of ?? $t->id;
-                                        $q->where('correction_of', $rootId)
-                                        ->orWhere('id', $rootId);
-                                    })
-                                    ->latest('id') // cari yang terakhir di rantai
-                                    ->value('id')
-                            )
-                                <a href="{{ route('transactions.correct_form', $t) }}"
-                                class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">
-                                Koreksi Supplier
-                                </a>
-                            @endif --}}
-
-                            {{-- @php
-                                $rootId = $t->correction_of ?? $t->id;
-                                $latestIn = \App\Models\StockTransaction::where(function($q) use ($rootId) {
-                                        $q->where('id', $rootId)->orWhere('correction_of', $rootId);
-                                    })
-                                    ->where('type', \App\Models\StockTransaction::TYPE_IN)
-                                    ->orderByDesc('id')
-                                    ->first();
-                            @endphp
-
-                            @if(
-                                $t->type === \App\Models\StockTransaction::TYPE_IN &&
-                                $t->status === \App\Models\StockTransaction::STATUS_APPROVED &&
-                                $latestIn && $t->id === $latestIn->id
-                            )
-                                <a href="{{ route('transactions.correct_form', $t) }}"
-                                class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">
-                                Koreksi Supplier
-                                </a>
-                            @endif --}}
-
-                            {{-- @if($t->can_correct)
-                                <a href="{{ route('transactions.correct_form', $t) }}"
-                                class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">
-                                Koreksi Supplier
-                                </a>
-                            @endif --}}
-
-                            {{-- @if($t->can_correct && in_array(auth()->user()->role, ['Admin','Manajer Gudang']))
-                                <a href="{{ route('transactions.correct_form', $t) }}"
-                                class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">
-                                Koreksi Supplier
-                                </a>
-                            @endif --}}
-                            {{-- @if($t->can_correct && in_array(auth()->user()->role, ['Admin','Manajer Gudang']))
-                                <a href="{{ route('transactions.correct_form', $t) }}"
-                                class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">
-                                Koreksi Supplier
-                                </a>
-                            @endif --}}
-                            @if($t->can_correct && in_array(auth()->user()->role, ['Admin','Manajer Gudang']))
-                                <a href="{{ route('transactions.correct_form', $t) }}"
-                                class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">
-                                Koreksi Supplier
+                                   class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">
+                                   Koreksi Supplier
                                 </a>
                             @endif
+                        @endcan
 
-                        @else
-                            <span class="text-gray-400">-</span>
-                        @endif
+                        {{-- ❌ Kalau user tidak punya izin update/correct --}}
+                        @cannot('update', $t)
+                            @cannot('correct', $t)
+                                <span class="text-gray-400">-</span>
+                            @endcannot
+                        @endcannot
+                        
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="10" class="p-4 text-center text-gray-500">Belum ada transaksi</td>
+                    <td colspan="11" class="p-4 text-center text-gray-500">Belum ada transaksi</td>
                 </tr>
             @endforelse
         </tbody>

@@ -7,31 +7,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
-    // use SoftDeletes;
-
-    // protected $fillable = [
-    //     'category_id', 
-    //     'supplier_id', 
-    //     'name', 
-    //     'sku', 
-    //     'description',
-    //     'purchase_price', 
-    //     'selling_price', 
-    //     'image',
-    //     'minimum_stock', 
-    //     'current_stock',
-    // ];
-
-    // public function attributes() 
-    // {
-    //     return $this->hasMany(ProductAttribute::class);
-    // }
-
-    // public function transactions() 
-    // {
-    //     return $this->hasMany(StockTransaction::class);
-    // }
-
     use SoftDeletes;
 
     protected $fillable = [

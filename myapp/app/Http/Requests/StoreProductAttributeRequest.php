@@ -11,7 +11,7 @@ class StoreProductAttributeRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return auth()->check() && auth()->user()->role === 'Admin';
     }
 
     /**
@@ -22,7 +22,9 @@ class StoreProductAttributeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'product_id' => 'required|exists:products,id',
+            'name'       => 'required|string|max:255',
+            'value'      => 'nullable|string|max:255',
         ];
     }
 }

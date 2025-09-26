@@ -7,23 +7,27 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StockTransaction extends Model
 {
-    use SoftDeletes; // 🔹 optional tapi best practice untuk audit trail
+    use SoftDeletes;
 
     // Constants untuk type
     public const TYPE_IN  = 'Masuk';
     public const TYPE_OUT = 'Keluar';
 
     // Constants untuk status
-    public const STATUS_PENDING    = 'Pending';
-    public const STATUS_APPROVED   = 'Diterima';
-    public const STATUS_DISPATCHED = 'Dikeluarkan';
-    public const STATUS_REJECTED   = 'Ditolak';
+    public const STATUS_PENDING     = 'Pending';
+    public const STATUS_IN_PROGRESS = 'In Progress';
+    public const STATUS_COMPLETED   = 'Completed';
+    public const STATUS_APPROVED    = 'Diterima';
+    public const STATUS_REJECTED    = 'Ditolak';
+    public const STATUS_DISPATCHED  = 'Dikeluarkan';
 
     protected $fillable = [
         'reference',
         'product_id',
-        'supplier_id',   // ← ini harus ditambah
+        'supplier_id',
         'user_id',
+        'assigned_by',
+        'assigned_to',
         'approved_by',
         'type',
         'quantity',
@@ -35,50 +39,43 @@ class StockTransaction extends Model
     ];
 
     protected $casts = [
-        'date'     => 'date', // cukup 'date', otomatis Carbon
-        'quantity' => 'integer',
-        'unit_cost'=> 'decimal:2',
+        'date'      => 'date',
+        'quantity'  => 'integer',
+        'unit_cost' => 'decimal:2',
     ];
 
-    // 🔹 Relasi Eloquent
-    public function product()
-    {
-        return $this->belongsTo(Product::class);
-    }
+    // Relasi
+    public function product()     { return $this->belongsTo(Product::class); }
+    public function supplier()    { return $this->belongsTo(Supplier::class); }
+    public function user()        { return $this->belongsTo(User::class, 'user_id'); }
+    public function approver()    { return $this->belongsTo(User::class, 'approved_by'); }
+    public function assignedBy()  { return $this->belongsTo(User::class, 'assigned_by'); }
+    public function assignedTo()  { return $this->belongsTo(User::class, 'assigned_to'); }
 
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
+    // Koreksi
+    public function correctedFrom() { return $this->belongsTo(StockTransaction::class, 'correction_of'); }
+    public function corrections()   { return $this->hasMany(StockTransaction::class, 'correction_of'); }
 
-    public function approver()
-    {
-        return $this->belongsTo(User::class, 'approved_by');
-    }
-
-    public function supplier()
-    {
-        return $this->belongsTo(Supplier::class);
-    }
-
-    // Koreksi salah input doleh manager
-    public function correctedFrom()
-    {
-        return $this->belongsTo(StockTransaction::class, 'correction_of');
-    }
-
-    public function corrections()
-    {
-        return $this->hasMany(StockTransaction::class, 'correction_of');
-    }
-    // App\Models\StockTransaction.php
-
+    // Accessor
     public function getIsCorrectableAttribute(): bool
     {
         return $this->type === self::TYPE_IN
             && $this->status === self::STATUS_APPROVED
-            && is_null($this->correction_of)
             && !$this->corrections()->exists();
     }
 
+    // public function createdTransactions()
+    // {
+    //     return $this->hasMany(StockTransaction::class, 'user_id');
+    // }
+
+    // public function assignedTransactions()
+    // {
+    //     return $this->hasMany(StockTransaction::class, 'assigned_to');
+    // }
+
+    // public function approvedTransactions()
+    // {
+    //     return $this->hasMany(StockTransaction::class, 'approved_by');
+    // }
 }

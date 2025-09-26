@@ -5,7 +5,10 @@
         <p style="color: green;">{{ session('success') }}</p>
     @endif
 
-    <a href="{{ route('suppliers.create') }}">+ Tambah Supplier</a>
+    {{-- Tombol tambah hanya untuk Admin --}}
+    @can('create', App\Models\Supplier::class)
+        <a href="{{ route('suppliers.create') }}">+ Tambah Supplier</a>
+    @endcan
 
     <table border="1" cellpadding="8" cellspacing="0">
         <thead>
@@ -27,12 +30,19 @@
                     <td>{{ $supplier->phone }}</td>
                     <td>{{ $supplier->email }}</td>
                     <td>
-                        <a href="{{ route('suppliers.edit', $supplier->id) }}">Edit</a>
-                        <form action="{{ route('suppliers.destroy', $supplier->id) }}" method="POST" style="display:inline">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" onclick="return confirm('Yakin hapus supplier?')">Delete</button>
-                        </form>
+                        {{-- Edit hanya untuk Admin & Manager --}}
+                        @can('update', $supplier)
+                            <a href="{{ route('suppliers.edit', $supplier->id) }}">Edit</a>
+                        @endcan
+
+                        {{-- Delete hanya untuk Admin --}}
+                        @can('delete', $supplier)
+                            <form action="{{ route('suppliers.destroy', $supplier->id) }}" method="POST" style="display:inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" onclick="return confirm('Yakin hapus supplier?')">Delete</button>
+                            </form>
+                        @endcan
                     </td>
                 </tr>
             @empty

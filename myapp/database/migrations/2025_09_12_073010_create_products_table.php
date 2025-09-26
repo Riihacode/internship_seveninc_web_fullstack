@@ -9,37 +9,21 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    // public function up(): void
-    // {
-    //     Schema::create('products', function (Blueprint $table) {
-    //         $table->id();
-    //         $table->timestamps();
-    //     });
-    // }
-    // public function up(): void
-    // {
-    //     Schema::create('products', function (Blueprint $table) {
-    //         $table->id();
-    //         $table->foreignId('category_id')->constrained()->cascadeOnUpdate()->restrictOnDelete();
-    //         $table->foreignId('supplier_id')->constrained()->cascadeOnUPdate()->restrictOnDelete();
-    //         $table->string('name');
-    //         $table->string('sku')->unique();
-    //         $table->text('description')->nullable();    // Stock keeping unit
-    //         $table->decimal('purchase_price', 15, 2);
-    //         $table->decimal('selling_price', 15, 2);
-    //         $table->string('image')->nullable();    // path to file image
-    //         $table->unsignedInteger('minimum_stock');
-    //         $table->timestamps();
-    //     });
-    // }
     public function up(): void
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
 
             // Relasi
-            $table->foreignId('category_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('supplier_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('category_id')
+                  ->constrained()
+                  ->cascadeOnUpdate()
+                  ->restrictOnDelete(); // ❌ tidak bisa hapus kategori jika masih ada produk
+
+            $table->foreignId('supplier_id')
+                  ->constrained()
+                  ->cascadeOnUpdate()
+                  ->restrictOnDelete(); // ❌ tidak bisa hapus supplier jika masih ada produk
 
             // Data produk
             $table->string('name', 255);
@@ -47,7 +31,7 @@ return new class extends Migration
             $table->text('description')->nullable();
 
             // Harga & Stok
-            $table->decimal('purchase_price', 15, 2); // skala industri: cukup besar
+            $table->decimal('purchase_price', 15, 2);
             $table->decimal('selling_price', 15, 2);
             $table->unsignedInteger('minimum_stock')->default(0);
             $table->unsignedInteger('current_stock')->default(0);
@@ -56,7 +40,7 @@ return new class extends Migration
             $table->string('image')->nullable();
 
             $table->timestamps();
-            $table->softDeletes(); // standar industri: untuk audit trail
+            $table->softDeletes();
         });
     }
 

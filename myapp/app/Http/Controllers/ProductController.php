@@ -22,37 +22,32 @@ class ProductController extends Controller
     // =======================================================
     // = ... index, create, store, edit, update, destroy ... =
     // =======================================================
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with(['category', 'supplier'])->paginate(5);
+        $products = Product::with(['category', 'supplier'])
+            ->when($request->q, fn($q,$v) =>
+                $q->where('name','like',"%$v%")
+                  ->orWhere('sku','like',"%$v%")
+            )
+            ->paginate(10);
+
         return view('products.index', compact('products'));
     }
-
+    
     public function create()
     {
-        // $this->authorize('create', Product::class);
-        // dd('AUTHORIZED SEBAGAI ADMIN');
-
         $categories = Category::all();
         $suppliers  = Supplier::all();
         return view('products.create', compact('categories', 'suppliers'));
     }
 
-    // public function store(StoreProductRequest $request)
-    // {
-    //     Product::create($request->validated());
-    //     return redirect()->route('products.index')->with('success', 'Produk berhasil ditambahkan.');
-    // }
     public function store(StoreProductRequest $request)
     {
-        // $this->authorize('create', Product::class); // paksa cek policy create
-        // dd(auth()->user());
         Product::create($request->validated());
 
         return redirect()->route('products.index')
             ->with('success', 'Produk berhasil ditambahkan.');
     }
-
 
     public function edit(Product $product)
     {

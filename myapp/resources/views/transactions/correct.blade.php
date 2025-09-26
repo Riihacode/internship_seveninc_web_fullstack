@@ -11,40 +11,44 @@
         <div><b>Status:</b> {{ $transaction->status }}</div>
     </div>
 
-    @if ($errors->any())
-        <div class="mb-4 p-2 bg-red-100 text-red-700 rounded">
-            <ul>
-                @foreach ($errors->all() as $e)
-                    <li>{{ $e }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+    @can('correct', $transaction)
+        @if ($errors->any())
+            <div class="mb-4 p-2 bg-red-100 text-red-700 rounded">
+                <ul>
+                    @foreach ($errors->all() as $e)
+                        <li>{{ $e }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-    <form method="POST" action="{{ route('transactions.correct', $transaction) }}" class="space-y-4">
-        @csrf
+        <form method="POST" action="{{ route('transactions.correct', $transaction) }}" class="space-y-4">
+            @csrf
 
-        <div>
-            <label class="block font-medium">Supplier baru</label>
-            <select name="supplier_id" class="border rounded p-2 w-full" required>
-                @foreach($suppliers as $s)
-                    <option value="{{ $s->id }}">{{ $s->name }}</option>
-                @endforeach
-            </select>
-        </div>
+            <div>
+                <label class="block font-medium">Supplier baru</label>
+                <select name="supplier_id" class="border rounded p-2 w-full" required>
+                    @foreach($suppliers as $s)
+                        <option value="{{ $s->id }}">{{ $s->name }}</option>
+                    @endforeach
+                </select>
+            </div>
 
-        <div>
-            <label class="block font-medium">Catatan (opsional)</label>
-            <textarea name="notes" class="border rounded p-2 w-full"></textarea>
-        </div>
+            <div>
+                <label class="block font-medium">Catatan (opsional)</label>
+                <textarea name="notes" class="border rounded p-2 w-full"></textarea>
+            </div>
 
-        <div class="flex gap-2">
-            <button type="submit" class="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700">
-                Simpan Koreksi
-            </button>
-            <a href="{{ route('transactions.index') }}" class="px-4 py-2 border rounded">
-                Batal
-            </a>
-        </div>
-    </form>
+            <div class="flex gap-2">
+                <button type="submit" class="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700">
+                    Simpan Koreksi
+                </button>
+                <a href="{{ route('transactions.index') }}" class="px-4 py-2 border rounded">
+                    Batal
+                </a>
+            </div>
+        </form>
+    @else
+        <p class="text-gray-500">Anda tidak punya izin untuk koreksi transaksi ini.</p>
+    @endcan
 </x-app-layout>

@@ -6,7 +6,7 @@
         <p style="color: green; margin-bottom:10px;">{{ session('success') }}</p>
     @endif
 
-    {{-- Tombol tambah produk, hanya muncul jika user boleh create --}}
+    {{-- Tombol tambah produk, hanya untuk Admin --}}
     @can('create', App\Models\Product::class)
         <p><a href="{{ route('products.create') }}">+ Tambah Produk</a></p>
     @endcan
@@ -32,8 +32,8 @@
                 <td>{{ $p->id }}</td>
                 <td>{{ $p->sku }}</td>
                 <td>{{ $p->name }}</td>
-                <td>{{ $p->category?->name }}</td>
-                <td>{{ $p->supplier?->name }}</td>
+                <td>{{ $p->category?->name ?? '-' }}</td>
+                <td>{{ $p->supplier?->name ?? '-' }}</td>
                 <td>{{ number_format($p->purchase_price, 0, ',', '.') }}</td>
                 <td>{{ number_format($p->selling_price, 0, ',', '.') }}</td>
                 <td>{{ $p->minimum_stock }}</td>
@@ -53,12 +53,11 @@
                 </td>
             </tr>
         @empty
-            <tr><td colspan="10">Belum ada produk.</td></tr>
+            <tr><td colspan="10" style="text-align:center">Belum ada produk.</td></tr>
         @endforelse
         </tbody>
     </table>
 
-    {{-- Pagination --}}
     <div style="margin-top:10px;">
         {{ $products->links() }}
     </div>

@@ -9,10 +9,6 @@ class UpdateSupplierRequest extends FormRequest
     /**
      * Determine if the user is authorized to make this request.
      */
-    // public function authorize(): bool
-    // {
-    //     return false;
-    // }
     public function authorize(): bool
     {
         return true; // kalau mau pakai gate/policy, bisa diubah nanti
@@ -23,18 +19,12 @@ class UpdateSupplierRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-    // public function rules(): array
-    // {
-    //     return [
-    //         //
-    //     ];
-    // }
     public function rules(): array
     {
         return [
             'name'    => 'required|string|max:255',
             'address' => 'nullable|string|max:500',
-            'phone'   => 'nullable|string|max:20',
+            'phone'   => 'nullable|regex:/^[0-9+\-\s]+$/|max:20',
             'email'   => 'nullable|email|max:255',
         ];
     }

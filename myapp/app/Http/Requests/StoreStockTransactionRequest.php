@@ -12,7 +12,6 @@ class StoreStockTransactionRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        // return false;
         return $this->user()->can('create', StockTransaction::class);
     }
 
@@ -23,16 +22,6 @@ class StoreStockTransactionRequest extends FormRequest
      */
     public function rules(): array
     {
-        // return [
-        //     //
-        //     'product_id'    => ['required', 'exists:products,id'],
-        //     'type'          => ['required', 'in:Masuk,Keluar'],
-        //     'quantity'      => ['required', 'integer', 'min:1'],
-        //     'date'          => ['required', 'date'],
-        //     'notes'         => ['nullable', 'string'],
-        //     'reference'     => ['nullable', 'string', 'max:64'],
-        //     'unit_cost'     => ['nullable', 'numeric', 'min:0'],
-        // ];
         $rules = [
             'product_id' => ['required', 'exists:products,id'],
             'type'       => ['required', 'in:Masuk,Keluar'],
@@ -44,7 +33,7 @@ class StoreStockTransactionRequest extends FormRequest
         ];
 
         // supplier_id hanya wajib jika role Manager & type = Masuk
-        if ($this->user()->role === 'Manajer Gudang' && $this->input('type') === 'Masuk') {
+        if (in_array($this->user()->role, ['Admin', 'Manager Gudang']) && $this->input('type') === 'Masuk' ) {
             $rules['supplier_id'] = ['required', 'exists:suppliers,id'];
         } else {
             $rules['supplier_id'] = ['nullable', 'exists:suppliers,id'];

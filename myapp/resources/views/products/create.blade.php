@@ -11,8 +11,6 @@
         </div>
     @endif
 
-    <p>Current user: {{ auth()->user()?->email ?? 'Guest' }} (role: {{ auth()->user()?->role ?? '-' }})</p>
-
     <form action="{{ route('products.store') }}" method="POST">
         @csrf
 
@@ -58,4 +56,7 @@
 
         <button type="submit">Simpan</button>
     </form>
+
+    <br>
+    <a href="{{ route('products.index') }}">← Kembali ke daftar produk</a>
 </x-app-layout>

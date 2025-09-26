@@ -11,7 +11,6 @@ class UpdateStockTransactionRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        // return false;
         // Hanya Manager/Admin boleh update transaksi (approve/reject/dispatch)
         return $this->user()->can('update', $this->route('transaction'));
     }

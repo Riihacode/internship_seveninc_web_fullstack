@@ -55,4 +55,7 @@
 
         <button type="submit">Update</button>
     </form>
+
+    <br>
+    <a href="{{ route('products.index') }}">← Kembali ke daftar produk</a>
 </x-app-layout>

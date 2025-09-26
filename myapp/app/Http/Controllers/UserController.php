@@ -9,70 +9,40 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    // /**
-    //  * Display a listing of the resource.
-    //  */
-    // public function index()
-    // {
-    //     //
-    // }
-
-    // /**
-    //  * Show the form for creating a new resource.
-    //  */
-    // public function create()
-    // {
-    //     //
-    // }
-
-    // /**
-    //  * Store a newly created resource in storage.
-    //  */
-    // public function store(Request $request)
-    // {
-    //     //
-    // }
-
-    // /**
-    //  * Display the specified resource.
-    //  */
-    // public function show(string $id)
-    // {
-    //     //
-    // }
-
-    // /**
-    //  * Show the form for editing the specified resource.
-    //  */
-    // public function edit(string $id)
-    // {
-    //     //
-    // }
-
-    // /**
-    //  * Update the specified resource in storage.
-    //  */
-    // public function update(Request $request, string $id)
-    // {
-    //     //
-    // }
-
-    // /**
-    //  * Remove the specified resource from storage.
-    //  */
-    // public function destroy(string $id)
-    // {
-    //     //
-    // }
-
-
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    // public function index(Request $request)
+    // {
+    //     $users = User::when($request->q, fn($q,$v) =>
+    //         $q->where('name','like',"%$v%")
+    //           ->orWhere('email','like',"%$v%")
+    //           ->orWhere('role','like',"%$v%")
+    //     )->paginate(10);
+
+    //     return view('users.index', compact('users'));
+    // }
+    public function index(Request $request)
     {
-        //
-        $users = User::paginate(10);
+        $query = User::query();
+
+        // Jika login sebagai Manajer Gudang → hanya lihat Staff
+        if (auth()->user()->role === 'Manajer Gudang') {
+            $query->where('role', 'Staff Gudang');
+        }
+
+        // Jika ada pencarian
+        if ($request->filled('q')) {
+            $q = $request->q;
+            $query->where(function ($sub) use ($q) {
+                $sub->where('name', 'like', "%$q%")
+                    ->orWhere('email', 'like', "%$q%")
+                    ->orWhere('role', 'like', "%$q%");
+            });
+        }
+
+        $users = $query->paginate(10);
+
         return view('users.index', compact('users'));
     }
 
@@ -98,6 +68,7 @@ class UserController extends Controller
             'role'      => $request->role,
         ]);
 
+        // return redirect()->route('users.index')->with('success', 'User berhasil dibuat');
         return redirect()->route('admin.users.index')->with('success', 'User berhasil dibuat');
     }
 
@@ -144,6 +115,7 @@ class UserController extends Controller
     {
         //
         $user->delete();
+        // return redirect()->route('users.index')->with('success', 'User berhasil dihapus.');
         return redirect()->route('admin.users.index')->with('success', 'User berhasil dihapus.');
     }
 }

@@ -14,7 +14,7 @@ class ProductPolicy
      */
     public function viewAny(User $user): bool
     {
-        return in_array($user->role, ['Admin', 'Manajer Gudang']);
+        return in_array($user->role, ['Admin', 'Manajer Gudang', 'Staff Gudang']);
     }
 
     /**
@@ -28,27 +28,6 @@ class ProductPolicy
     /**
      * Hanya Admin yang bisa menambah produk baru.
      */
-    // public function create(User $user): bool
-    // {
-    //     Log::info("Policy create dipanggil untuk user {$user->email} dengan role {$user->role}");
-    //     // return $user->role === 'Admin';
-    //     return strcasecmp(trim($user->role), 'Admin') === 0;
-    // }
-    // public function create(User $user): bool
-    // {
-    //     Log::info('DEBUG create policy', [
-    //         'user_id' => $user->id,
-    //         'role' => $user->role,
-    //     ]);
-    //     return $user->role === 'Admin';
-    // }
-
-    // public function create(User $user): Response
-    // {
-    //     return $user->role === 'Admin'
-    //         ? Response::allow()
-    //         : Response::deny('Hanya Admin yang boleh membuat produk.');
-    // }
     public function create(User $user): bool
     {
         // Log::info("Policy create dipanggil untuk user {$user->email} dengan role {$user->role}");
@@ -61,8 +40,8 @@ class ProductPolicy
      */
     public function update(User $user, Product $product): bool
     {
-        // return in_array($user->role, ['Admin', 'Manajer Gudang']);
-        return in_array(strtolower(trim($user->role)), ['admin', 'manajer gudang']);
+        return in_array($user->role, ['Admin', 'Manajer Gudang']);
+        // return in_array(strtolower(trim($user->role)), ['Admin', 'Manajer Gudang']);
     }
 
     /**
