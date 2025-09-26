@@ -49,9 +49,13 @@ Route::middleware('auth')->group(function() {
 // =======================
 Route::middleware(['auth'])->group(function () {
     // Staff + Manager + Admin → buat transaksi (Pending)
+    // Route::middleware('role:Staff Gudang,Manajer Gudang,Admin')->group(function () {
+    //     Route::resource('transactions', StockTransactionController::class)
+    //         ->only(['index', 'create', 'store', 'show']);
+    // });
     Route::middleware('role:Staff Gudang,Manajer Gudang,Admin')->group(function () {
         Route::resource('transactions', StockTransactionController::class)
-            ->only(['index', 'create', 'store', 'show']);
+            ->only(['index', 'create', 'store']);
     });
 
     // Manager + Admin → approval, eksekusi, koreksi
@@ -108,10 +112,6 @@ Route::middleware(['auth'])
 // =======================
 // Product Attributes (Admin only)
 // =======================
-// Route::middleware(['auth', 'role:Admin'])->group(function () {
-//     Route::resource('attributes', ProductAttributeController::class);
-// });
-
 // Admin full access
 Route::middleware(['auth', 'role:Admin'])->group(function () {
     Route::resource('attributes', ProductAttributeController::class);
@@ -121,6 +121,24 @@ Route::middleware(['auth', 'role:Admin'])->group(function () {
 Route::middleware(['auth', 'role:Manajer Gudang'])->group(function () {
     Route::resource('attributes', ProductAttributeController::class)
         ->only(['index', 'show']);
+});
+
+// =======================
+// Stock Transaction Request (Manager only)
+// =======================
+Route::middleware(['auth','role:Manajer Gudang'])->group(function () {
+    Route::post('transactions/{transaction}/validate', [StockTransactionController::class, 'validateRequest'])
+        ->name('transactions.validate');
+
+    Route::post('transactions/{transaction}/forward', [StockTransactionController::class, 'forwardToAdmin'])
+        ->name('transactions.forward');
+});
+
+Route::middleware(['auth', 'role:Staff Gudang,Manajer Gudang'])->group(function () {
+    Route::get('transactions/request', [StockTransactionController::class, 'create'])
+        ->name('transactions.request');
+    Route::post('transactions/request', [StockTransactionController::class, 'store'])
+        ->name('transactions.store_request');
 });
 
 require __DIR__.'/auth.php';

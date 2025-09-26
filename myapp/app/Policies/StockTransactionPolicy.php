@@ -8,63 +8,6 @@ use Illuminate\Auth\Access\Response;
 
 class StockTransactionPolicy
 {
-    // /**
-    //  * Determine whether the user can view any models.
-    //  */
-    // public function viewAny(User $user): bool
-    // {
-    //     return false;
-    // }
-
-    // /**
-    //  * Determine whether the user can view the model.
-    //  */
-    // public function view(User $user, StockTransaction $stockTransaction): bool
-    // {
-    //     return false;
-    // }
-
-    // /**
-    //  * Determine whether the user can create models.
-    //  */
-    // public function create(User $user): bool
-    // {
-    //     return false;
-    // }
-
-    // /**
-    //  * Determine whether the user can update the model.
-    //  */
-    // public function update(User $user, StockTransaction $stockTransaction): bool
-    // {
-    //     return false;
-    // }
-
-    // /**
-    //  * Determine whether the user can delete the model.
-    //  */
-    // public function delete(User $user, StockTransaction $stockTransaction): bool
-    // {
-    //     return false;
-    // }
-
-    // /**
-    //  * Determine whether the user can restore the model.
-    //  */
-    // public function restore(User $user, StockTransaction $stockTransaction): bool
-    // {
-    //     return false;
-    // }
-
-    // /**
-    //  * Determine whether the user can permanently delete the model.
-    //  */
-    // public function forceDelete(User $user, StockTransaction $stockTransaction): bool
-    // {
-    //     return false;
-    // }
-
-    
     /**
      * Determine whether the user can view any models.
      */
@@ -107,9 +50,19 @@ class StockTransactionPolicy
      * Update di sini berarti: approve, reject, atau dispatch.
      * Hanya Manajer & Admin yang boleh.
      */
-    public function update(User $user, StockTransaction $stockTransaction): bool
+    // public function update(User $user, StockTransaction $stockTransaction): bool
+    // {
+    //     // return false;
+    //     return in_array($user->role, ['Admin', 'Manajer Gudang']);
+    // }
+    public function update(User $user, StockTransaction $transaction): bool
     {
-        // return false;
+        // Staff boleh update status kalau transaksi ditugaskan ke dia
+        if ($user->role === 'Staff Gudang' && $transaction->assigned_to === $user->id) {
+            return true;
+        }
+
+        // Manager & Admin tetap punya akses penuh
         return in_array($user->role, ['Admin', 'Manajer Gudang']);
     }
 

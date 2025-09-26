@@ -32,26 +32,87 @@ class StockTransactionController extends Controller
         return view('transactions.index', compact('transactions'));
     }
 
+    // public function create()
+    // {
+    //     $products = Product::all();
+
+    //     if (auth()->user()->role === 'Manajer Gudang') {
+    //         $suppliers = Supplier::all();
+    //         return view('transactions.create_manager', compact('products', 'suppliers'));
+    //     }
+
+    //     return view('transactions.create_staff', compact('products'));
+    // }
+    // public function create()
+    // {
+    //     $products = Product::all();
+
+    //     if (auth()->user()->role === 'Manajer Gudang') {
+    //         $suppliers = Supplier::all();
+    //         return view('transactions.create_manager', compact('products', 'suppliers'));
+    //     }
+
+    //     if (auth()->user()->role === 'Admin') {
+    //         $suppliers = Supplier::all();
+    //         return view('transactions.create_admin', compact('products', 'suppliers'));
+    //     }
+
+    //     // default Staff
+    //     return view('transactions.create_staff', compact('products'));
+    // }
     public function create()
     {
         $products = Product::all();
+        $suppliers = Supplier::all();
 
-        if (auth()->user()->role === 'Manajer Gudang') {
-            $suppliers = Supplier::all();
-            return view('transactions.create_manager', compact('products', 'suppliers'));
-        }
-
-        return view('transactions.create_staff', compact('products'));
+        return view('transactions.create', compact('products', 'suppliers'));
     }
 
+
+    // public function store(StoreStockTransactionRequest $request)
+    // {
+    //     $data = $request->validated();
+    //     $data['user_id']     = Auth::id();
+    //     $data['assigned_by'] = Auth::id();
+    //     $data['assigned_to'] = $request->assigned_to ?? null;
+    //     $data['status']      = StockTransaction::STATUS_PENDING;
+
+    //     if ($data['type'] === StockTransaction::TYPE_OUT) {
+    //         $product = Product::findOrFail($data['product_id']);
+    //         if ($product->current_stock < $data['quantity']) {
+    //             return back()->withErrors(['quantity' => 'Stok tidak mencukupi']);
+    //         }
+    //     }
+
+    //     StockTransaction::create($data);
+
+    //     return back()->with('success', 'Transaksi berhasil dibuat dan menunggu persetujuan.');
+    // }
     public function store(StoreStockTransactionRequest $request)
     {
         $data = $request->validated();
-        $data['user_id']     = Auth::id();
-        $data['assigned_by'] = Auth::id();
-        $data['assigned_to'] = $request->assigned_to ?? null;
-        $data['status']      = StockTransaction::STATUS_PENDING;
+        $data['user_id'] = Auth::id();
+        $data['status']  = StockTransaction::STATUS_PENDING;
 
+        // Kalau Staff → hanya bikin request, belum ada assignment
+        if (auth()->user()->role === 'Staff Gudang') {
+            $data['assigned_by'] = null;
+            $data['assigned_to'] = null;
+        }
+
+        // Kalau Manager → bisa assign tugas ke Staff
+        elseif (auth()->user()->role === 'Manajer Gudang') {
+            $data['assigned_by'] = Auth::id();
+            $data['assigned_to'] = $request->assigned_to ?? null;
+        }
+
+        // Kalau Admin → fleksibel (jarang dipakai)
+        elseif (auth()->user()->role === 'Admin') {
+            $data['assigned_by'] = Auth::id();
+            $data['assigned_to'] = $request->assigned_to ?? null;
+        }
+
+        // Validasi stok keluar
         if ($data['type'] === StockTransaction::TYPE_OUT) {
             $product = Product::findOrFail($data['product_id']);
             if ($product->current_stock < $data['quantity']) {
@@ -63,6 +124,7 @@ class StockTransactionController extends Controller
 
         return back()->with('success', 'Transaksi berhasil dibuat dan menunggu persetujuan.');
     }
+
 
     public function approveForm(StockTransaction $transaction)
     {
@@ -286,4 +348,52 @@ class StockTransactionController extends Controller
         return redirect()->route('transactions.index')
             ->with('success','Transaksi dikoreksi dengan supplier baru.');
     }
+
+    // Staff buat request (sudah ada di store())
+    // Manager validasi request Staff
+    public function validateRequest(Request $request, StockTransaction $transaction)
+    {
+        $this->authorize('update', $transaction);
+
+        if ($transaction->status !== StockTransaction::STATUS_PENDING) {
+            return back()->withErrors(['msg' => 'Request ini sudah divalidasi sebelumnya.']);
+        }
+
+        $action = $request->input('action'); // approve | reject
+
+        if ($action === 'approve') {
+            $transaction->update([
+                'status'      => StockTransaction::STATUS_APPROVED,
+                'approved_by' => auth()->id(),
+            ]);
+            return back()->with('success', 'Request disetujui Manager.');
+        } elseif ($action === 'reject') {
+            $transaction->update([
+                'status'      => StockTransaction::STATUS_REJECTED,
+                'approved_by' => auth()->id(),
+            ]);
+            return back()->with('success', 'Request ditolak Manager.');
+        }
+
+        return back()->withErrors(['msg' => 'Aksi tidak valid.']);
+    }
+
+    // Manager meneruskan request ke Admin
+    public function forwardToAdmin(StockTransaction $transaction)
+    {
+        $this->authorize('update', $transaction);
+
+        if ($transaction->status !== StockTransaction::STATUS_APPROVED) {
+            return back()->withErrors(['msg' => 'Request harus disetujui dulu sebelum dikirim ke Admin.']);
+        }
+
+        // Kirim notifikasi ke Admin (bisa pakai event/notification)
+        // Sementara kita update field reference
+        $transaction->update([
+            'reference' => 'REQ-ADMIN-' . $transaction->id,
+        ]);
+
+        return back()->with('success', 'Request berhasil diteruskan ke Admin.');
+    }
+
 }

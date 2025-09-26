@@ -32,7 +32,7 @@
                 <th class="p-2 border">ID</th>
                 <th class="p-2 border">Produk</th>
                 <th class="p-2 border">Supplier</th>
-                <th class="p-2 border">Staff</th>
+                <th class="p-2 border">Pembuat Transaksi</th>
                 <th class="p-2 border">Tipe</th>
                 <th class="p-2 border">Jumlah</th>
                 <th class="p-2 border">Status</th>

@@ -15,6 +15,9 @@
         <form action="{{ route('transactions.store') }}" method="POST" class="space-y-4">
             @csrf
 
+            {{-- ✅ Tambahkan hidden input untuk type --}}
+            <input type="hidden" name="type" value="Masuk">
+
             {{-- Produk --}}
             <div>
                 <label for="product_id" class="block font-medium">Produk:</label>

@@ -10,6 +10,7 @@
             <li><a href="{{ route('admin.users.index') }}">Kelola Users</a></li>
             <li><a href="{{ route('transactions.index') }}">Kelola Transaksi Stok</a></li>
             <li><a href="{{ route('attributes.index') }}">Kelola Product Attribute</a></li>
+            <li><a href="{{ route('transactions.create') }}">Form Request Stok</a></li>
         </ul>
     </nav>
 </x-app-layout>
